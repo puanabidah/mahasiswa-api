@@ -36,16 +36,16 @@ export const nimParamSchema = z.object({
 
 export const putMahasiswaSchema = z.object({
   nama_lengkap: z
-    .string()
+    .string("Wajib diisi")
     .trim()
     .min(3, "Nama minimal harus 3 huruf")
     .regex(/^[a-zA-Z\s\.\']+$/, "Hanya boleh huruf, spasi, titik, atau petik"),
   kelas: z
-    .string()
+    .string("Wajib diisi")
     .trim()
     .regex(/^[a-cA-C]$/, "Kelas harus berupa satu huruf antara A sampai C")
     .toUpperCase(),
-  alamat: z.string().trim(),
+  alamat: z.string("Wajib diisi").trim(),
 });
 
 export const patchMahasiswaSchema = z
