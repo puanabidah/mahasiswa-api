@@ -1,11 +1,10 @@
 import sql from "../config/database.js";
 import response from "../utils/response.js";
-
-const columns = ["nim", "nama_lengkap", "kelas", "alamat"];
+import * as mahasiswaModel from "../models/mahasiswaModel.js";
 
 export const getAllMahasiswa = async (req, res) => {
   try {
-    const data = await sql`SELECT * FROM mahasiswa`;
+    const data = await mahasiswaModel.findAll();
     response(res, 200, "Sukses mengambil semua data", data);
   } catch (error) {
     console.error(error);
@@ -17,7 +16,7 @@ export const getMahasiswaByNim = async (req, res) => {
   try {
     const { nim } = req.params;
 
-    const [data] = await sql`SELECT * FROM mahasiswa WHERE nim = ${nim}`;
+    const data = await mahasiswaModel.findByNim(nim);
 
     if (!data) {
       return response(res, 404, "Data tidak ditemukan");
@@ -34,10 +33,7 @@ export const createMahasiswa = async (req, res) => {
   const data = req.body;
 
   try {
-    const newData = await sql`INSERT INTO mahasiswa ${sql(
-      data,
-      columns
-    )} RETURNING *`;
+    const newData = await mahasiswaModel.insert(data);
 
     response(res, 201, "Data baru berhasil dimasukkan", newData);
   } catch (error) {
@@ -53,10 +49,8 @@ export const createBulkMahasiswa = async (req, res) => {
   try {
     const data = req.body;
 
-    const newData = await sql`INSERT INTO mahasiswa ${sql(
-      data,
-      columns
-    )} RETURNING *`;
+    const newData = await mahasiswaModel.insert(data);
+
     response(res, 201, "Data baru berhasil dimasukkan", newData);
   } catch (error) {
     if (error.code === "23505") {
@@ -76,9 +70,7 @@ export const updateAllField = async (req, res) => {
     if (Object.keys(data).length === 0) {
       return response(res, 400, "Tidak ada data yang diupdate");
     }
-    const [updateData] = await sql`UPDATE mahasiswa SET ${sql(
-      data
-    )} WHERE nim = ${nim} RETURNING *`;
+    const updateData = await mahasiswaModel.update(nim, data);
 
     if (!updateData) {
       return response(res, 404, "Mahasiswa tidak ditemukan, gagal update");
@@ -105,9 +97,7 @@ export const updatePartialField = async (req, res) => {
   }
 
   try {
-    const updatePartial = await sql`UPDATE mahasiswa SET ${sql(
-      filteredData
-    )} WHERE nim = ${nim} RETURNING *`;
+    const updatePartial = await mahasiswaModel.update(nim, filteredData);
 
     if (updatePartial.length === 0) {
       return response(res, 404, "Mahasiswa tidak ditemukan");
@@ -123,8 +113,7 @@ export const deleteMahasiswa = async (req, res) => {
   const { nim } = req.params;
 
   try {
-    const [deletedData] =
-      await sql`DELETE FROM mahasiswa WHERE nim = ${nim} RETURNING nim, nama_lengkap`;
+    const deletedData = await mahasiswaModel.remove(nim);
 
     if (!deletedData) {
       return response(res, 404, "Tidak menemukan data untuk dihapus");
